@@ -3,9 +3,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module Database.PostgreSQL.Copy.Escape (
     EscapeCopyValue(..),
-    EscapeCopyRow(..),
-    Escape,
-    escape,
+    escapeCopyRow,
 ) where
 
 import Data.ByteString          (ByteString)
@@ -15,6 +13,7 @@ import Data.List                (foldl')
 import Data.Monoid
 import Foreign
 import Foreign.C
+import GHC.IO                   (unsafeDupablePerformIO)
 
 import qualified Data.ByteString as B
 
@@ -83,6 +82,11 @@ class Escape a where
 
 escape :: Escape a => a -> IO ByteString
 escape a = runEmit (escapeUpperBound a) (escapeEmit a)
+
+-- | Escape a row, using tab as the column delimiter.
+-- Include a trailing newline.
+escapeCopyRow :: [EscapeCopyValue] -> ByteString
+escapeCopyRow xs = unsafeDupablePerformIO (escape (EscapeCopyRow xs))
 
 data EscapeCopyValue
     = EscapeCopyNull

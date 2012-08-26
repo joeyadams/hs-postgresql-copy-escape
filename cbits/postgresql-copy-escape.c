@@ -12,6 +12,13 @@ unsigned char *c_postgresql_copy_escape_text(
     while (in_size-- > 0) {
         unsigned char c = *in++;
 
+        /*
+         * http://www.postgresql.org/docs/current/static/sql-copy.html#AEN64058
+         *
+         * "... the following characters must be preceded by a backslash if
+         * they appear as part of a column value: backslash itself, newline,
+         * carriage return, and the current delimiter character."
+         */
         switch (c) {
             case '\t':
                 *out++ = '\\';
