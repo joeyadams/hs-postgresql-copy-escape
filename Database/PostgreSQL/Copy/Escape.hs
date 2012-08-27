@@ -26,7 +26,6 @@ infixr 6 <>
 {-# INLINE (<>) #-}
 #endif
 
-
 -- | An action that takes an input buffer, and for each byte, writes
 --   one or more bytes to an output buffer.
 type Escaper
@@ -34,12 +33,6 @@ type Escaper
    -> CSize             -- ^ size_t in_size
    -> Ptr CUChar        -- ^ unsigned char *out
    -> IO (Ptr CUChar)   -- ^ Returns pointer to end of written data
-
-foreign import ccall unsafe
-    c_postgresql_copy_escape_text :: Escaper
-
-foreign import ccall unsafe
-    c_postgresql_copy_escape_bytea :: Escaper
 
 -- | Action that writes bytes into a buffer, returning the new write position.
 -- This does not check the buffer size.
@@ -83,10 +76,13 @@ class Escape a where
 escape :: Escape a => a -> IO ByteString
 escape a = runEmit (escapeUpperBound a) (escapeEmit a)
 
--- | Escape a row, using tab as the column delimiter.
--- Include a trailing newline.
-escapeCopyRow :: [EscapeCopyValue] -> ByteString
-escapeCopyRow xs = unsafeDupablePerformIO (escape (EscapeCopyRow xs))
+------------------------------------------------------------------------
+
+foreign import ccall unsafe
+    c_postgresql_copy_escape_text :: Escaper
+
+foreign import ccall unsafe
+    c_postgresql_copy_escape_bytea :: Escaper
 
 data EscapeCopyValue
     = EscapeCopyNull
@@ -130,3 +126,13 @@ instance Escape EscapeCopyRow where
             xs  -> foldl' f 0 xs
       where
         f a x = a + escapeUpperBound x + 1
+
+-- | Escape a row of data for use with a COPY FROM statement.
+-- Include a trailing newline at the end.
+--
+-- This assumes text format (rather than BINARY or CSV) with the default
+-- delimiter (tab) and default null string (\\N).  A suitable query looks like:
+--
+-- >COPY tablename (id, col1, col2) FROM stdin;
+escapeCopyRow :: [EscapeCopyValue] -> ByteString
+escapeCopyRow xs = unsafeDupablePerformIO (escape (EscapeCopyRow xs))
