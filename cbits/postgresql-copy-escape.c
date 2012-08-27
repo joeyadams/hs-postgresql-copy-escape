@@ -1,6 +1,20 @@
 #include <stddef.h>
 
 /*
+ * You might be wondering: why are these functions written in C instead of
+ * Haskell?  The answer is two-fold:
+ *
+ *  * I could not write a Haskell version that was anywhere near as fast as the
+ *    C version, short of error-prone buffer traversal with pointers [1].
+ *
+ *  * The C code is clearer, thanks to C's built-in pointer increment notation,
+ *    and to its character literals that are implicitly coerced to
+ *    unsigned char.
+ *
+ *  [1]: http://codereview.stackexchange.com/questions/9998/optimizing-bytestring-escaping
+ */
+
+/*
  * Escape a datum for COPY FROM.  The buffer pointed to by @out should be
  * at least 2*in_size bytes long.
  *
