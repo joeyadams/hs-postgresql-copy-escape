@@ -13,7 +13,7 @@ description:
     NULL, etc.).
     .
     \[1\]: <http://www.postgresql.org/docs/current/static/sql-copy.html>
-homepage:           https://github.com/joeyadams/haskell-postgresql-copy-escape
+homepage:           https://github.com/joeyadams/hs-postgresql-copy-escape
 license:            BSD3
 license-file:       LICENSE
 author:             Joey Adams
@@ -25,7 +25,7 @@ cabal-version:      >=1.8
 
 source-repository head
     type:       git
-    location:   git://github.com/joeyadams/haskell-postgresql-copy-escape.git
+    location:   git://github.com/joeyadams/hs-postgresql-copy-escape.git
 
 library
     exposed-modules:
