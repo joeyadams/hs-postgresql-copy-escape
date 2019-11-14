@@ -38,11 +38,13 @@ type Escaper
 -- This does not check the buffer size.
 newtype Emit = Emit (Ptr CUChar -> IO (Ptr CUChar))
 
+instance Semigroup Emit where
+    (Emit a) <> (Emit b) =
+        Emit (\ptr0 -> a ptr0 >>= b)
+
 instance Monoid Emit where
     mempty =
         Emit return
-    mappend (Emit a) (Emit b) =
-        Emit (\ptr0 -> a ptr0 >>= b)
 
 runEmit :: Int -> Emit -> IO ByteString
 runEmit bufsize (Emit f) =
