@@ -10,10 +10,20 @@ import Data.ByteString          (ByteString)
 import Data.ByteString.Internal (createAndTrim)
 import Data.ByteString.Unsafe   (unsafeUseAsCStringLen)
 import Data.List                (foldl')
-import Data.Monoid
 import Foreign
 import Foreign.C
 import GHC.IO                   (unsafeDupablePerformIO)
+
+-- base 4.8 added Monoid to Prelude.
+#if !MIN_VERSION_base(4,8,0)
+import Data.Monoid
+#endif
+
+-- base 4.9 added Semigroup.
+-- base 4.11 included Semigroup in Prelude.
+#if MIN_VERSION_base(4,9,0) && !MIN_VERSION_base(4,11,0)
+import Data.Semigroup
+#endif
 
 import qualified Data.ByteString as B
 
@@ -38,9 +48,13 @@ type Escaper
 -- This does not check the buffer size.
 newtype Emit = Emit (Ptr CUChar -> IO (Ptr CUChar))
 
+-- Provide Semigroup instance if base >= 4.9.
+-- This instance is required if base >= 4.11, since base 4.11 made Semigroup a => Monoid a.
+#if MIN_VERSION_base(4,9,0)
 instance Semigroup Emit where
     (Emit a) <> (Emit b) =
         Emit (\ptr0 -> a ptr0 >>= b)
+#endif
 
 instance Monoid Emit where
     mempty =
